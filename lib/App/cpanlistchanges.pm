@@ -52,6 +52,7 @@ sub show_changes {
     my($from, $to);
     if ($mod =~ s/\@\{?(.+)\}?$//) {
         ($from, $to) = split /\.\./, $1;
+        $to = undef if $to eq 'HEAD';
     }
 
     my $dist = try { YAML::Load( $self->get("http://cpanmetadb.appspot.com/v1.0/package/$mod") ) };
