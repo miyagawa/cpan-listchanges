@@ -1,5 +1,8 @@
 Revision history for Perl extension App::cpanlistchanges
 
+0.04  Tue Jan 25 21:56:57 PST 2011
+        - Fixed a subtle bug in the version output in the changes view
+
 0.03  Tue Jan 25 21:47:46 PST 2011
         - Support 'HEAD' in the version comparison
 
