@@ -9,6 +9,7 @@ requires 'CPAN::DistnameInfo';
 requires 'Module::Metadata';
 requires 'YAML';
 requires 'Try::Tiny';
+requires 'Pod::Usage';
 
 build_requires 'Test::More', 0.88;
 test_requires 'Test::Requires';
