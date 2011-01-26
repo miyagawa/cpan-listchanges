@@ -1,0 +1,28 @@
+#!perl
+use strict;
+use App::cpanlistchanges;
+
+my $app = App::cpanlistchanges->new;
+$app->run(@ARGV);
+
+__END__
+
+=head1 NAME
+
+cpan-listchanges - List changes for CPAN modules
+
+=head1 SYNOPSIS
+
+  # See what's changed in Plack between your local and the latest on CPAN
+  cpan-listchanges Plack
+
+  # See what's changed for modules that require upgrades
+  cpan-listchanges `cpan-outdated -p`
+
+=head1 SEE ALSO
+
+L<App::cpanminus> L<App::cpanoutdated>
+
+=cut
+
+
