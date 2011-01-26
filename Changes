@@ -1,5 +1,8 @@
 Revision history for Perl extension App::cpanlistchanges
 
+0.03  Tue Jan 25 21:47:46 PST 2011
+        - Support 'HEAD' in the version comparison
+
 0.02  Tue Jan 25 21:44:42 PST 2011
         - Added -h and pod2usage
         - Added --all which displays all the changelog regardless of local/remote versions
