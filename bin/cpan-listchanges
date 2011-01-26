@@ -16,8 +16,24 @@ cpan-listchanges - List changes for CPAN modules
   # See what's changed in Plack between your local and the latest on CPAN
   cpan-listchanges Plack
 
+  # See what's changed for DBI between 1.615 and 1.616 (Use @ and ..)
+  cpan-listchanges DBI@1.615..1.616
+
+  # See the whole changelog for Catalyst::Runtime
+  cpan-listchanges --all Catalyst
+
   # See what's changed for modules that require upgrades
   cpan-listchanges `cpan-outdated -p`
+
+=head1 OPTIONS
+
+=over 4
+
+=item -a, --all
+
+Displays the whole content of Changes, without version comparison.
+    
+=back
 
 =head1 SEE ALSO
 

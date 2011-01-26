@@ -6,20 +6,30 @@ our $VERSION = '0.01';
 
 use Algorithm::Diff;
 use CPAN::DistnameInfo;
+use Getopt::Long;
 use Module::Metadata;
 use LWP::UserAgent;
 use YAML;
 use Try::Tiny;
+use Pod::Usage;
 use version;
 
 sub new {
-    bless {}, shift;
+    bless {
+        all => 0,
+    }, shift;
 }
 
 sub run {
-    my($self, @modules) = @_;
+    my($self, @args) = @_;
 
-    for my $mod (@modules) {
+    Getopt::Long::GetOptionsFromArray(
+        \@args,
+        "all|a", \$self->{all},
+        "help",  sub { Pod::Usage::pod2usage(0) },
+    );
+
+    for my $mod (@args) {
         $self->show_changes($mod);
     }
 }
@@ -39,22 +49,35 @@ sub get {
 sub show_changes {
     my($self, $mod) = @_;
 
+    my($from, $to);
+    if ($mod =~ s/\@\{?(.+)\}?$//) {
+        ($from, $to) = split /\.\./, $1;
+    }
+
     my $dist = try { YAML::Load( $self->get("http://cpanmetadb.appspot.com/v1.0/package/$mod") ) };
     unless ($dist->{distfile}) {
         warn "Couldn't find a module '$mod'. Skipping.\n";
         return;
     }
 
-    my $info = CPAN::DistnameInfo->new($dist->{distfile});
     my $meta = Module::Metadata->new_from_module($mod);
+    my $info = CPAN::DistnameInfo->new($dist->{distfile});
 
-    unless ($meta && $meta->{version}) {
+    $from ||= $meta->{version};
+    $to   ||= $info->{version};
+
+    unless ($self->{all} or $from) {
         warn "You don't have the module '$mod' installed locally. Skipping.\n";
         return;
     }
 
-    if (version->new($meta->{version}) >= version->new($info->{version})) {
-        warn "You have the latest version of $info->{dist} ($info->{version}). Skipping.\n";
+    unless ($self->{all} or $to) {
+        warn "Couldn't find the module '$mod' on CPAN MetaDB. Skipping.\n";
+        return;
+    }
+
+    if (!$self->{all} and version->new($from) >= version->new($to)) {
+        warn "You have the latest version of $info->{dist} ($to). Skipping.\n";
         return;
     }
 
@@ -62,6 +85,7 @@ sub show_changes {
     # but could be something else. I guess it could be outsourced to FrePAN
     my $html = $self->get("http://search.cpan.org/dist/$info->{dist}");
     $html =~ s/&#(\d+);/chr $1/eg; # search.cpan.org seems to encode all filenames
+
     if ($html =~ m!<a href="/src/[^"]+">(Change.*?)</a>!i) {
         my $filename = $1;
 
@@ -70,8 +94,15 @@ sub show_changes {
             $self->get("http://cpansearch.perl.org/src/$info->{cpanid}/$info->{dist}-$version/$filename");
         };
 
-        my $old_changes = $get_changes->($meta->{version});
-        my $new_changes = $get_changes->($info->{version});
+        if ($self->{all}) {
+            print "=== Changes for $info->{dist}\n\n";
+            print $get_changes->($to);
+            print "\n";
+            return;
+        }
+
+        my $old_changes = $get_changes->($from);
+        my $new_changes = $get_changes->($to);
 
         my $diff = Algorithm::Diff->new(
             [ split /\n/, $old_changes ],
