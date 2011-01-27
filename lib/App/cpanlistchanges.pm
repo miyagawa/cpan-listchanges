@@ -7,6 +7,7 @@ our $VERSION = '0.04';
 use Algorithm::Diff;
 use CPAN::DistnameInfo;
 use Getopt::Long;
+use IO::Handle;
 use Module::Metadata;
 use LWP::UserAgent;
 use YAML;
@@ -17,6 +18,7 @@ use version;
 sub new {
     bless {
         all => 0,
+        use_pager => 1,
     }, shift;
 }
 
@@ -27,6 +29,7 @@ sub run {
         \@args,
         "all|a", \$self->{all},
         "help",  sub { Pod::Usage::pod2usage(0) },
+        "pager!", \$self->{use_pager},
     );
 
     for my $mod (@args) {
@@ -126,7 +129,7 @@ sub show_changes {
 
 sub print {
     my $self = shift;
-    $self->{pager} ||= $ENV{PAGER}
+    $self->{pager} ||= ($self->{use_pager} and $ENV{PAGER})
         ? do {
             open my $io, "| $ENV{PAGER}" or die $!;
             $io;
