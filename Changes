@@ -1,5 +1,10 @@
 Revision history for Perl extension App::cpanlistchanges
 
+0.05  Thu Jan 27 14:40:28 PST 2011
+        - Support distributions released under multiple CPAN IDs
+        - Automatically enable PAGER pipe. Use --no-pager to disable it
+        - Fixed dependencies
+
 0.04  Tue Jan 25 21:56:57 PST 2011
         - Fixed a subtle bug in the version output in the changes view
 
