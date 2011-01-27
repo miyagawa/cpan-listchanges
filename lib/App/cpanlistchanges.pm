@@ -82,51 +82,57 @@ sub show_changes {
         return;
     }
 
-    # First, get what kind of Changes file it uses - normally just 'Changes'
-    # but could be something else. I guess it could be outsourced to FrePAN
-    my $html = $self->get("http://search.cpan.org/dist/$info->{dist}");
-    $html =~ s/&#(\d+);/chr $1/eg; # search.cpan.org seems to encode all filenames
+    my $get_changes = sub {
+        my $version = shift;
+        my $html = $self->get("http://search.cpan.org/dist/$info->{dist}-$version");
+        $html =~ s/&#(\d+);/chr $1/eg; # search.cpan.org seems to encode all filenames
+        $html =~ m!<a href="(/src/[^"]+)">(Change.*?)</a>!i or return;
 
-    if ($html =~ m!<a href="/src/[^"]+">(Change.*?)</a>!i) {
-        my $filename = $1;
+        my($url, $filename) = ($1, $2);
+        return $self->get("http://cpansearch.perl.org$1");
+    };
 
-        my $get_changes = sub {
-            my $version = shift;
-            $self->get("http://cpansearch.perl.org/src/$info->{cpanid}/$info->{dist}-$version/$filename");
-        };
-
-        if ($self->{all}) {
-            print "=== Changes for $info->{dist}\n\n";
-            print $get_changes->($to);
-            print "\n";
-            return;
-        }
-
-        my $old_changes = $get_changes->($from);
-        my $new_changes = $get_changes->($to);
-
-        my $diff = Algorithm::Diff->new(
-            [ split /\n/, $old_changes ],
-            [ split /\n/, $new_changes ],
-        );
-        $diff->Base(1);
-
-        my $result;
-        while ($diff->Next()) {
-            next if $diff->Same();
-            $result .= "$_\n" for $diff->Items(2);
-        }
-
-        if ($result) {
-            print "=== Changes between $from and $to for $info->{dist}\n\n";
-            print $result;
-            print "\n";
-        } else {
-            warn "Couldn't find changes between $from and $to for $info->{dist}\n";
-        }
-    } else {
-        warn "Couldn't find $info->{dist} on CPAN.\n";
+    my $new_changes = $get_changes->($to);
+    unless ($new_changes) {
+        warn "Can't find Changes for $info->{dist}-$to. Skipping.\n";
+        return;
     }
+
+    if ($self->{all}) {
+        $self->print("=== Changes for $info->{dist}\n\n$new_changes\n");
+        return;
+    }
+
+    my $old_changes = $get_changes->($from) || '';
+
+    my $diff = Algorithm::Diff->new(
+        [ split /\n/, $old_changes ],
+        [ split /\n/, $new_changes ],
+    );
+    $diff->Base(1);
+
+    my $result;
+    while ($diff->Next()) {
+        next if $diff->Same();
+        $result .= "$_\n" for $diff->Items(2);
+    }
+
+    if ($result) {
+        $self->print("=== Changes between $from and $to for $info->{dist}\n\n$result\n");
+    } else {
+        warn "Couldn't find changes between $from and $to for $info->{dist}\n";
+    }
+}
+
+sub print {
+    my $self = shift;
+    $self->{pager} ||= $ENV{PAGER}
+        ? do {
+            open my $io, "| $ENV{PAGER}" or die $!;
+            $io;
+        } : \*STDOUT;
+
+    $self->{pager}->print(@_);
 }
 
 1;
