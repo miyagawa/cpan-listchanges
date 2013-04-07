@@ -1,17 +1,76 @@
-use inc::Module::Install;
-name 'cpan-listchanges';
-all_from 'lib/App/cpanlistchanges.pm';
-readme_from('lib/App/cpanlistchanges.pm');
-install_script 'bin/cpan-listchanges';
-requires 'Algorithm::Diff';
-requires 'LWP';
-requires 'CPAN::DistnameInfo';
-requires 'Module::Metadata';
-requires 'YAML';
-requires 'Try::Tiny';
-requires 'Pod::Usage';
 
-build_requires 'Test::More', 0.88;
-test_requires 'Test::Requires';
-auto_set_repository();
-WriteAll;
+use strict;
+use warnings;
+
+use 5.008001;
+
+use ExtUtils::MakeMaker 6.30;
+
+
+
+my %WriteMakefileArgs = (
+  "ABSTRACT" => "list changes for CPAN modules",
+  "AUTHOR" => "Tatsuhiko Miyagawa <miyagawa\@bulknews.net>",
+  "BUILD_REQUIRES" => {},
+  "CONFIGURE_REQUIRES" => {
+    "ExtUtils::MakeMaker" => "6.30"
+  },
+  "DISTNAME" => "cpan-listchanges",
+  "EXE_FILES" => [
+    "script/cpan-listchanges"
+  ],
+  "LICENSE" => "perl",
+  "NAME" => "cpan::listchanges",
+  "PREREQ_PM" => {
+    "Algorithm::Diff" => 0,
+    "CPAN::DistnameInfo" => 0,
+    "LWP" => 0,
+    "Module::Metadata" => 0,
+    "Pod::Usage" => 0,
+    "Try::Tiny" => 0,
+    "YAML" => 0
+  },
+  "TEST_REQUIRES" => {
+    "Test::More" => "0.88",
+    "Test::Requires" => 0
+  },
+  "VERSION" => "0.05",
+  "test" => {
+    "TESTS" => "t/*.t"
+  }
+);
+
+
+unless ( eval { ExtUtils::MakeMaker->VERSION(6.63_03) } ) {
+  my $tr = delete $WriteMakefileArgs{TEST_REQUIRES};
+  my $br = $WriteMakefileArgs{BUILD_REQUIRES};
+  for my $mod ( keys %$tr ) {
+    if ( exists $br->{$mod} ) {
+      $br->{$mod} = $tr->{$mod} if $tr->{$mod} > $br->{$mod};
+    }
+    else {
+      $br->{$mod} = $tr->{$mod};
+    }
+  }
+}
+
+unless ( eval { ExtUtils::MakeMaker->VERSION(6.56) } ) {
+  my $br = delete $WriteMakefileArgs{BUILD_REQUIRES};
+  my $pp = $WriteMakefileArgs{PREREQ_PM};
+  for my $mod ( keys %$br ) {
+    if ( exists $pp->{$mod} ) {
+      $pp->{$mod} = $br->{$mod} if $br->{$mod} > $pp->{$mod};
+    }
+    else {
+      $pp->{$mod} = $br->{$mod};
+    }
+  }
+}
+
+delete $WriteMakefileArgs{CONFIGURE_REQUIRES}
+  unless eval { ExtUtils::MakeMaker->VERSION(6.52) };
+
+WriteMakefile(%WriteMakefileArgs);
+
+
+
