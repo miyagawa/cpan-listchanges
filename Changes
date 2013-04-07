@@ -1,5 +1,8 @@
 Revision history for Perl extension App::cpanlistchanges
 
+{{$NEXT}}
+        - Convert Milla and it fixes bad NAME in Makefile
+
 0.05  Thu Jan 27 14:40:28 PST 2011
         - Support distributions released under multiple CPAN IDs
         - Automatically enable PAGER pipe. Use --no-pager to disable it
