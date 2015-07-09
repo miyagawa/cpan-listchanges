@@ -58,7 +58,7 @@ sub show_changes {
         $to = undef if $to eq 'HEAD';
     }
 
-    my $dist = try { YAML::Load( $self->get("http://cpanmetadb.appspot.com/v1.0/package/$mod") ) };
+    my $dist = try { YAML::Load( $self->get("http://cpanmetadb.plackperl.org/v1.0/package/$mod") ) };
     unless ($dist->{distfile}) {
         warn "Couldn't find a module '$mod'. Skipping.\n";
         return;
