@@ -20,4 +20,4 @@ it under the same terms as Perl itself.
 
 # SEE ALSO
 
-[cpan-listchanges](http://search.cpan.org/perldoc?cpan-listchanges)
+[cpan-listchanges](https://metacpan.org/pod/cpan-listchanges)

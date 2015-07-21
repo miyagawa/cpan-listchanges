@@ -2,6 +2,9 @@ Revision history for Perl extension App::cpanlistchanges
 
 {{$NEXT}}
 
+0.07  2015-07-21 01:37:05 PDT
+        - update cpanmetadb URL
+
 0.06  2013-04-07 01:29:17 PDT
         - Convert Milla and it fixes bad NAME in Makefile
 
