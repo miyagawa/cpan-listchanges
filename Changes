@@ -2,6 +2,9 @@ Revision history for Perl extension App::cpanlistchanges
 
 {{$NEXT}}
 
+0.08  2018-08-14 08:36:29 PDT
+        - Use metacpan to fetch Changes (#6)
+
 0.07  2015-07-21 01:37:05 PDT
         - update cpanmetadb URL
 
